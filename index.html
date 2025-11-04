@@ -25,7 +25,9 @@
     }
 
     /* === Password box top-right disguised as error === */
+    /* hidden by default; will be shown when © is clicked */
     #passwordBox {
+      display: none;
       position: fixed;
       top: 20px;
       right: 20px;
@@ -40,7 +42,6 @@
       user-select: none;
       z-index: 9999;
       font-size: 0.9rem;
-      display: none; /* hidden by default; shown when © is clicked */
     }
 
     #passwordBox:hover {
@@ -78,7 +79,7 @@
       background-color: #7a0000;
     }
 
-    /* © trigger */
+    /* Copyright trigger (©) */
     #copyrightTrigger {
       position: fixed;
       bottom: 18px;
@@ -87,15 +88,16 @@
       font-size: 1.2rem;
       cursor: pointer;
       user-select: none;
-      color: #555;
+      color: #666;
       background: rgba(255,255,255,0.85);
-      padding: 6px 8px;
+      padding: 6px 10px;
       border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: background-color 0.18s ease, color 0.18s ease;
     }
     #copyrightTrigger:hover {
-      color: #222;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+      background: #fff;
+      color: #111;
     }
 
     /* === Plant Site - professional botanical style === */
@@ -283,7 +285,7 @@
 <body>
 
   <!-- Password box disguised as error (top-right) -->
-  <div id="passwordBox" title="Error: Unauthorized Access Detected" aria-hidden="true">
+  <div id="passwordBox" title="Error: Unauthorized Access Detected" role="dialog" aria-hidden="true">
     <div>⚠️ Error: Unauthorized Access</div>
     <input
       type="password"
@@ -295,6 +297,9 @@
     />
     <button id="submitPassword">Unlock</button>
   </div>
+
+  <!-- Copyright trigger (click the © to reveal password box) -->
+  <div id="copyrightTrigger" title="Click to display access prompt">©</div>
 
   <!-- Plant Site -->
   <main id="plantSite" aria-label="Botanical Research Center Homepage">
@@ -386,7 +391,7 @@
       <div class="link-button" onclick="openAboutBlank('https://com.108.181.32.77.sslip.io/')">Proxy Here!</div>
       <div class="link-button" onclick="openAboutBlank('https://bing.com.108.181.32.77.sslip.io')">Proxy Here!</div>
       <div class="link-button" onclick="openAboutBlank('https://outlook.com.108.181.32.77.sslip.io')">Proxy Here!</div>
-      <div class="link-button" onclick="openAboutBlank ('https://arxthegoat.ts0880.es')">Proxy Here!</div>
+      <div class="link-button" onclick="openAboutBlank('https://arxthegoat.ts0880.es')">Proxy Here!</div>
       <div id="proxyFrameContainer"></div>
     </section>
 
@@ -424,11 +429,7 @@
     </section>
   </section>
 
-  <!-- © trigger element -->
-  <div id="copyrightTrigger" role="button" aria-label="Copyright">©</div>
-
   <script>
-
     // Elements
     const passwordBox = document.getElementById('passwordBox');
     const passwordInput = document.getElementById('passwordInput');
@@ -466,12 +467,15 @@
       if (val === correctPassword) {
         unlocked = true;
         passwordBox.style.display = 'none';
+        passwordBox.setAttribute('aria-hidden', 'true');
         plantSite.style.display = 'none';
         hubSite.style.display = 'block';
+        hubSite.setAttribute('aria-hidden', 'false');
         isHubActive = true;
       } else {
         alert('Incorrect password.');
         passwordInput.value = '';
+        passwordInput.focus();
       }
     });
 
@@ -489,27 +493,28 @@
       }
     });
 
-    // Show password box only when © is clicked
-    copyrightTrigger.addEventListener('click', () => {
-      // Toggle visibility so repeated clicks can hide/show
-      const isVisible = passwordBox.style.display === 'block';
-      if (isVisible) {
-        passwordBox.style.display = 'none';
-        passwordBox.setAttribute('aria-hidden', 'true');
-      } else {
-        passwordBox.style.display = 'block';
-        passwordBox.setAttribute('aria-hidden', 'false');
-        passwordInput.focus();
-      }
-    });
-
-    // On load, ensure plant is visible and hub is hidden; password box stays hidden
-    window.onload = () => {
+    // On load, keep password box hidden; focus not forced
+    window.addEventListener('load', () => {
       passwordBox.style.display = 'none';
+      passwordBox.setAttribute('aria-hidden', 'true');
       plantSite.style.display = 'block';
       hubSite.style.display = 'none';
-    };
+      hubSite.setAttribute('aria-hidden', 'true');
+    });
+
+    // Show password box when © is clicked
+    copyrightTrigger.addEventListener('click', () => {
+      // Show password box and focus input
+      passwordBox.style.display = 'block';
+      passwordBox.setAttribute('aria-hidden', 'false');
+      passwordInput.focus();
+      // Optionally scroll to top for small viewports so the box is visible
+      if (window.innerWidth < 640) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
   </script>
+
   <script>
     // Function to open URLs in about:blank popup
     function openAboutBlank(url) {
